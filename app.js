@@ -5,6 +5,7 @@ const socketIO = require('socket.io');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose'); // Import Mongoose
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
@@ -48,18 +49,16 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Global map to store rooms and their users
+app.use(cors({
+    origin: ['https://charming-lamington-c1b952.netlify.app', 'http://localhost:4000']
+}));
+
 const chatRooms = {
     'general': new Set(), // Default room
 };
 // Map to track which room each socket is currently in
 const socketRoomMap = new Map();
 
-// Helper functions for user data (replaced by Mongoose)
-// async function readUsers() { /* ... */ }
-// async function writeUsers(users) { /* ... */ }
-
-// Socket.IO authentication middleware
 io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) {
