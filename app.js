@@ -10,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
     cors: {
-        origin: 'https://charming-lamington-c1b952.netlify.app/', 'http://localhost:4000',
+        origin: ['https://charming-lamington-c1b952.netlify.app', 'http://localhost:4000'],
         methods: ["GET", "POST"]
     }
 });
