@@ -10,17 +10,17 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
     cors: {
-        origin: "*", // Allow all origins for development, restrict in production
+        origin: "https://incandescent-haupia-4eca78.netlify.app/, 'http://localhost:4000",
         methods: ["GET", "POST"]
     }
 });
 
 const PORT = process.env.PORT || 4000;
-const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey'; // Use environment variable in production
-// const USERS_FILE = path.join(__dirname, 'users.json'); // No longer needed
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
+
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI; // Replace with your Atlas URI
+const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
