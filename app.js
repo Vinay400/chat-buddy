@@ -20,7 +20,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey'; // Use environ
 // const USERS_FILE = path.join(__dirname, 'users.json'); // No longer needed
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://chatUser:Vinay1236$@cluster0.yxsgtkr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'; // Replace with your Atlas URI
+const MONGODB_URI = process.env.MONGODB_URI; // Replace with your Atlas URI
 mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
