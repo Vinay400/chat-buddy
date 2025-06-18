@@ -44,7 +44,15 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema);
 
-// Middleware for parsing JSON bodies
+// Message Schema and Model
+const MessageSchema = new mongoose.Schema({
+    room: { type: String, required: true },
+    sender: { type: String, required: true },
+    content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now, index: { expires: 60 * 60 * 24 } } // 24 hours TTL
+});
+const Message = mongoose.model('Message', MessageSchema);
+
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -56,7 +64,6 @@ app.use(cors({
 const chatRooms = {
     'general': new Set(), // Default room
 };
-// Map to track which room each socket is currently in
 const socketRoomMap = new Map();
 
 io.use((socket, next) => {
@@ -161,6 +168,8 @@ function onConnected(socket) {
                     .filter(s => s !== undefined) // Filter out disconnected sockets
                     .map(s => s.username);
                 io.to(currentRoom).emit('room-users', usersInRoom);
+                // Notify room that user has left
+                io.to(currentRoom).emit('user-left', socket.username);
             }
         }
         socketRoomMap.delete(socket.id);
@@ -173,6 +182,15 @@ function onConnected(socket) {
             data.name = socket.username;
             console.log(`Message in room ${currentRoom} from ${data.name}: ${data.message}`);
             io.to(currentRoom).emit('chat-message', data);
+
+            // Save message to MongoDB
+            const message = new Message({
+                room: currentRoom,
+                sender: socket.username,
+                content: data.message,
+                timestamp: new Date()
+            });
+            message.save().catch(err => console.error('Error saving message:', err));
         } else {
             console.warn(`Socket ${socket.id} tried to send message without being in a room.`);
         }
@@ -262,6 +280,17 @@ function onConnected(socket) {
 
         // Emit 'joined-room' event to the joining client with the room name
         socketToJoin.emit('joined-room', roomName);
+
+        // Fetch last 24 hours of messages for the room
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        Message.find({ room: roomName, timestamp: { $gte: since } })
+            .sort({ timestamp: 1 })
+            .then(messages => {
+                // Send messages to the joining client
+                socketToJoin.emit('room-history', messages);
+            })
+            .catch(err => console.error('Error fetching room history:', err));
+
         // Emit 'room-users' to all clients in the new room (as it definitely exists and has members)
         const usersInNewRoom = Array.from(chatRooms[roomName])
             .map(sId => io.sockets.sockets.get(sId))
@@ -270,11 +299,9 @@ function onConnected(socket) {
         io.to(roomName).emit('room-users', usersInNewRoom);
         console.log(`${socketToJoin.username} joined room: ${roomName}`);
 
-        // Clear messages for the joining user when they switch rooms
         socketToJoin.emit('clear-messages');
     }
 }
-
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
