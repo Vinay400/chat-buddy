@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
+require('dotenv').config();
 const socketIO = require('socket.io');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
