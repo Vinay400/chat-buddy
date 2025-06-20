@@ -241,6 +241,23 @@ function onConnected(socket) {
         }
     });
 
+    // Handle user leaving a room
+    socket.on('leave-room', (roomName, username) => {
+        socket.leave(roomName);
+        // Notify others in the room
+        socket.to(roomName).emit('user-left', username);
+    });
+
+    // Handle user disconnecting from all rooms
+    socket.on('disconnecting', () => {
+        // For each room the socket is in (except its own id)
+        for (const room of socket.rooms) {
+            if (room !== socket.id) {
+                socket.to(room).emit('user-left', socket.username || 'A user');
+            }
+        }
+    });
+
     // Helper function to send available rooms list
     function sendAvailableRooms() {
         io.emit('available-rooms', Object.keys(chatRooms));
