@@ -169,13 +169,11 @@ function onConnected(socket) {
                     .map(s => s.username);
                 io.to(currentRoom).emit('room-users', usersInRoom);
                 // Notify room that user has left
-                io.to(currentRoom).emit('user-left', socket.username);
+                // io.to(currentRoom).emit('user-left', socket.username); // Removed to prevent double emission
             }
         }
         socketRoomMap.delete(socket.id);
     });
-
-    // Modified message event to be room-specific
     socket.on('message', (data) => {
         const currentRoom = socketRoomMap.get(socket.id);
         if (currentRoom) {
