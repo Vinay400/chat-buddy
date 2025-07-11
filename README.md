@@ -95,6 +95,6 @@ This is the backend server for a real-time chat application built with Node.js, 
 - Messages are stored in MongoDB and expire after 24 hours.
 - CORS is enabled for the specified frontend origins.
 
-## License
+## Disclaimer
 
-MIT (or specify your license) 
+For educational purposes only. 
